@@ -12,11 +12,12 @@ produce(Amount) ->
 
 produce(Amount, Channel) when Amount > 0 ->
 	Publish = #'basic.publish'{ exchange = <<"">>, routing_key = <<"upsertjobs">>},
-	Message = #amqp_msg{payload = <<"thisisamessage">>},
+	Binary = term_to_binary(track_details_for(Amount)),
+	Message = #amqp_msg{payload = Binary },
 	amqp_channel:cast(Channel, Publish, Message),
 								
 	io:format("produced job. ~p left to go~n", [Amount - 1]),
-	produce(Amount - 1);
+	produce(Amount - 1); %% might need to close connection if getting any errors &&
 	
 produce(0, Channel) -> io:format("Completed producing jobs~n").
 
@@ -26,6 +27,20 @@ open_channel() ->
     {ok, Channel} = amqp_connection:open_channel(Connection),
 	amqp_channel:call(Channel, #'queue.declare'{queue = <<"upsertjobs">>}),
 	Channel.
+
+
+track_details_for(Number) ->
+	{
+		[
+			{
+				{title, "Track " ++ Number},
+				{release, "Release " ++ Number},
+				{artist, "Artist " ++ Number},
+				{price, "99"},
+				{released, "01/01/2012"}
+			}
+		]
+	}.
 
 
 
