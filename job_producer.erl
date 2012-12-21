@@ -6,27 +6,32 @@
 
 %% erl -pa ./lib/amqp_client-2.7.0/ebin ./rabbit_common/ebin %%
 produce(Amount) -> 
-	Channel = open_channel(),
-	produce(Amount, Channel).
+	{Connection, Channel} = open_channel(),
+	produce(Amount, Channel, Connection).
 	
 
-produce(Amount, Channel) when Amount > 0 ->
+produce(Amount, Channel, Connection) when Amount > 0 ->
 	Publish = #'basic.publish'{ exchange = <<"">>, routing_key = <<"upsertjobs">>},
 	Binary = term_to_binary(track_details_for(Amount)),
 	Message = #amqp_msg{payload = Binary },
 	amqp_channel:cast(Channel, Publish, Message),
 								
 	io:format("produced job. ~p left to go~n", [Amount - 1]),
-	produce(Amount - 1); %% might need to close connection if getting any errors &&
+	produce(Amount - 1, Channel, Connection); %% might need to close connection if getting any errors &&
 	
-produce(0, Channel) -> io:format("Completed producing jobs~n").
+produce(0, Channel, Connection) -> 
+	io:format("Completed producing jobs. Closing connection~n"),
+    ok = amqp_channel:close(Channel),
+    ok = amqp_connection:close(Connection).
+	
+	
 
 
 open_channel() ->
 	{ok, Connection} = amqp_connection:start(#amqp_params_network{host = "localhost"}),
     {ok, Channel} = amqp_connection:open_channel(Connection),
 	amqp_channel:call(Channel, #'queue.declare'{queue = <<"upsertjobs">>}),
-	Channel.
+	{Connection, Channel}.
 
 
 track_details_for(Number) ->
