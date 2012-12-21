@@ -40,7 +40,7 @@ track_details_for(Number) ->
 				{released, "01/01/2012"}
 			}
 		]
-	}
+	}.
 
 
 

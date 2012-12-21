@@ -31,16 +31,13 @@ open_channel() ->
 
 track_details_for(Number) ->
 	{
-		[
-			{
-				{title, "Track " ++ Number},
-				{release, "Release " ++ Number},
-				{artist, "Artist " ++ Number},
-				{price, "99"},
-				{released, "01/01/2012"}
-			}
-		]
+		{title, "Track " ++ Number},
+		{release, "Release " ++ Number},
+		{artist, "Artist " ++ Number},
+		{price, "99"},
+		{released, "01/01/2012"}
 	}.
+	
 
 
 
