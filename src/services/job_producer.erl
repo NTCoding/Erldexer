@@ -2,23 +2,27 @@
 
 -include_lib("lib/amqp_client/include/amqp_client.hrl").
 
--export([produce/1]).
+-export([produce/1, produce_priority_jobs/1]).
 
 produce(Amount) -> 
 	{Connection, Channel} = open_channel(),
-	produce(Amount, Channel, Connection).
+	produce(Amount, Channel, Connection, normal_priority).
+
+
+produce_priority_jobs(Amount) -> 
+	{Connection, Channel} = open_channel(),
+	produce(Amount, Channel, Connection, high_priority).
 	
 
-produce(Amount, Channel, Connection) when Amount > 0 ->
+produce(Amount, Channel, Connection, Priority) when Amount > 0 ->
 	Publish = #'basic.publish'{ exchange = <<"">>, routing_key = <<"upsertjobs">>},
-	Binary = term_to_binary(track_details_for(Amount)),
+	Binary = term_to_binary(track_details_for(Amount, Priority)),
 	Message = #amqp_msg{payload = Binary },
 	amqp_channel:cast(Channel, Publish, Message),
-								
 	io:format("produced job. ~p left to go~n", [Amount - 1]),
-	produce(Amount - 1, Channel, Connection); %% might need to close connection if getting any errors &&
+	produce(Amount - 1, Channel, Connection, Priority);
 	
-produce(0, Channel, Connection) -> 
+produce(0, Channel, Connection, _) -> 
 	io:format("Completed producing jobs. Closing connection~n"),
     ok = amqp_channel:close(Channel),
     ok = amqp_connection:close(Connection).
@@ -31,13 +35,14 @@ open_channel() ->
 	{Connection, Channel}.
 
 
-track_details_for(Number) ->
+track_details_for(Number, Priority) ->
 	{
 		{title, "Track " ++ Number},
 		{release, "Release " ++ Number},
 		{artist, "Artist " ++ Number},
 		{price, "99"},
-		{released, "01/01/2012"}
+		{released, "01/01/2012"},
+		{priority, Priority}
 	}.
 	
 

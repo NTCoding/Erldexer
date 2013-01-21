@@ -13,7 +13,7 @@ Walking Skeleton - end-to-end create jobs with no shop id
 
 3. Send to publisher queue **[done]
 
-4. Publish at set intervals
+4. Publish at set intervals **[done]
 
 
 Priority upsert jobs 
