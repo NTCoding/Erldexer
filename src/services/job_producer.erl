@@ -4,7 +4,6 @@
 
 -export([produce/1]).
 
-%% erl -pa ./lib/amqp_client-2.7.0/ebin ./rabbit_common/ebin %%
 produce(Amount) -> 
 	{Connection, Channel} = open_channel(),
 	produce(Amount, Channel, Connection).
@@ -24,8 +23,6 @@ produce(0, Channel, Connection) ->
     ok = amqp_channel:close(Channel),
     ok = amqp_connection:close(Connection).
 	
-	
-
 
 open_channel() ->
 	{ok, Connection} = amqp_connection:start(#amqp_params_network{host = "localhost"}),
