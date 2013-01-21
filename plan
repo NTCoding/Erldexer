@@ -1,0 +1,85 @@
+
+Erldexer Plan
+--------------
+--------------
+
+
+Walking Skeleton - end-to-end create jobs with no shop id
+----------------------------------------------------------
+
+1. Publish jobs onto batcher queue
+
+2. Batc just by amount (say 20)
+
+3. Send to publisher queue
+
+4. Publish at set intervals
+
+
+Priority upsert jobs 
+--------------------
+
+1. Jobs producer adds a flag to jobs indicating if they are priority
+
+2. Batchers will create separate batches for upsert jobs
+
+3. Upsert batches are published to the upsert queue
+
+4. Publishers will take priority jobs if they are present
+
+
+Error queue
+------------
+
+1. Create an error queue with retry logic
+
+1. Simulate a random record in batching to fail every so often and send to error queue
+
+2. Simulate a random record in publishing to fail every so often and send to error queue
+
+
+Monitoring Service
+------------------
+
+1. Hooks into all the event (received, batched, published, error queue)
+
+1. Create a simple web application
+
+2. Show last x number of jobs that were received
+
+3. last x number of jobs that were batched
+
+4. last x number of jobs that were published
+
+5. Current rate of batching
+
+6. Current rate of publishing
+
+7. Current rate of job from receipt to publish (differentiate normal / priority)
+
+
+Event-store based full re-index service
+---------------------------------------
+
+1. Create a subscriber for new jobs
+
+2. Store jobs in an event store
+
+3. Enable full re-indexing from data in event store
+
+
+Snapshot based re-index
+-----------------------
+
+1. Update the full re-index service to create  frequent snap shots
+
+2. Perform a full re-index from snapshots alone
+
+
+Technical Considerations
+------------------------
+
+1. Make it an OTP application
+
+2. Make message processing transactional 
+
