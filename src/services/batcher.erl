@@ -1,17 +1,25 @@
 -module(batcher).
 
--export([batch/0]).
+-behaviour(gen_server).
+
+-export([start_link/0, init/1, handle_cast/2, handle_info/2, code_change/3, handle_call/3, terminate/2]).
 
 -include_lib("lib/amqp_client/include/amqp_client.hrl").
 
-batch() -> 
-	spawn(fun() -> begin_batching() end).
+
+start_link() -> 
+	gen_server:start_link(?MODULE, [], []).
 
 
-begin_batching() ->
+init([]) ->
+	Channel = create_channel(),
+	{ok, {Channel, [], []}}.
+
+
+create_channel() ->
 	{ok, Connection} = amqp_connection:start(#amqp_params_network{host = "localhost"}),
 	Channel = open_channel(Connection),
-	loop(Channel, [], []).
+	Channel.
 
 
 open_channel(Connection) ->
@@ -25,38 +33,41 @@ open_channel(Connection) ->
 	Channel.
 
 
-loop(Channel, Batch, PriorityBatch) when erlang:length(Batch) >= 50 -> 
-	publish(Batch, Channel),
-	loop(Channel, [], PriorityBatch);
+%% receive batch job
+handle_info({#'basic.deliver'{}, #amqp_msg{payload = Payload}}, State) ->
+	Track = [binary_to_term(Payload)],
+	NewState = append_to_batch(Track, State),
+	FinalState = publish_if_threshold_met(NewState),
+	{noreply, FinalState}.
+	
 
-loop(Channel, Batch, PriorityBatch) when erlang:length(PriorityBatch) >= 5 -> %% assumes priority batches are frequent - talk to the business
-	publish_priority_batch(PriorityBatch, Channel),
-	loop(Channel, Batch, []);
+append_to_batch(Track, {Channel, Batch, PriorityBatch}) ->
+	case is_priority(Track) of
+		true -> 
+			NewPriorityBatch = lists:append(PriorityBatch, Track),
+			{Channel, Batch, NewPriorityBatch};
 
-loop(Channel, Batch, PriorityBatch) ->
-	receive
-		{#'basic.deliver'{}, #amqp_msg{payload = Payload}} ->
-			Track = [binary_to_term(Payload)],
-			case is_priority(Track) of
-			
-				true -> 
-					NewPriorityBatch = lists:append(PriorityBatch, Track),
-					loop(Channel, Batch, NewPriorityBatch);
-
-				false ->
-					NewBatch = lists:append(Batch, Track),
-					loop(Channel, NewBatch, PriorityBatch)	
-
-			end
-					
-	after 30 ->
-		loop(Channel, Batch, PriorityBatch)
+		false ->
+			NewBatch = lists:append(Batch, Track),
+			{Channel, NewBatch, PriorityBatch}
 	end.
 
 
-is_priority([{{priority, high_priority}, _}|T]) -> true;
+is_priority([{{priority, high_priority}, _}|_]) -> true;
 
-is_priority([{{priority, normal_priority}, _}|T]) -> false.
+is_priority([{{priority, normal_priority}, _}|_]) -> false.
+
+
+publish_if_threshold_met({Channel, Batch, PriorityBatch}) when erlang:length(Batch) >= 50 ->
+	publish(Batch, Channel), 
+	{Channel, [], PriorityBatch};
+
+publish_if_threshold_met({Channel, Batch, PriorityBatch}) when erlang:length(PriorityBatch) >= 5 ->
+	publish_priority_batch(PriorityBatch, Channel),
+	{Channel, Batch, []};
+
+publish_if_threshold_met(State) ->
+	State.
 
 
 publish(Batch, Channel) -> 
@@ -75,10 +86,14 @@ publish_priority_batch(Batch, Channel) ->
 	Publish = #'basic.publish'{ exchange = <<"">>, routing_key = <<"upsertprioritybatches">>},
 	amqp_channel:cast(Channel, Publish, Message),
 	io:format("Batcher created a priority batch ~n").
-	
-	
 
 
-	
+%% Un-needed OTP functions and callbacks
+handle_cast(_, _) -> ok.
 
-	
+handle_call(_, _, _) -> ok.
+
+code_change(_, _, _) -> ok.
+
+terminate(_, _) -> ok.
+
