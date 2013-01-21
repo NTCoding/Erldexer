@@ -37,12 +37,14 @@ open_channel() ->
 
 track_details_for(Number, Priority) ->
 	{
-		{title, "Track " ++ Number},
-		{release, "Release " ++ Number},
-		{artist, "Artist " ++ Number},
-		{price, "99"},
-		{released, "01/01/2012"},
-		{priority, Priority}
+		{priority, Priority},
+		{details,
+			{title, "Track " ++ Number},
+			{release, "Release " ++ Number},
+			{artist, "Artist " ++ Number},
+			{price, "99"},
+			{released, "01/01/2012"}
+		}		
 	}.
 	
 

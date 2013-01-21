@@ -19,7 +19,7 @@ Walking Skeleton - end-to-end create jobs with no shop id
 Priority upsert jobs 
 --------------------
 
-1. Jobs producer adds a flag to jobs indicating if they are priority
+1. Jobs producer adds a flag to jobs indicating if they are priority **[done]
 
 2. Batchers will create separate batches for upsert jobs
 
