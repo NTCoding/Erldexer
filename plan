@@ -7,9 +7,9 @@ Erldexer Plan
 Walking Skeleton - end-to-end create jobs with no shop id
 ----------------------------------------------------------
 
-1. Publish jobs onto batcher queue
+1. Publish jobs onto batcher queue **[done]
 
-2. Batc just by amount (say 20)
+2. Batch just by amount (say 20)
 
 3. Send to publisher queue
 
