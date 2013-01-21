@@ -23,7 +23,7 @@ Priority upsert jobs
 
 2. Batchers will create separate batches for upsert jobs **[done]
 
-3. Upsert batches are published to the upsert queue
+3. Priority upsert batches are published to the priority upsert queue **[done]
 
 4. Publishers will take priority jobs if they are present
 
