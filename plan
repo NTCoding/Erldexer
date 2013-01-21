@@ -9,9 +9,9 @@ Walking Skeleton - end-to-end create jobs with no shop id
 
 1. Publish jobs onto batcher queue **[done]
 
-2. Batch just by amount (say 20)
+2. Batch just by amount (say 20) **[done]
 
-3. Send to publisher queue
+3. Send to publisher queue **[done]
 
 4. Publish at set intervals
 
@@ -26,6 +26,16 @@ Priority upsert jobs
 3. Upsert batches are published to the upsert queue
 
 4. Publishers will take priority jobs if they are present
+
+
+Data Sharding
+--------------
+
+1. Assign all jobs to a particular shop
+
+2. Batch jobs by shop
+
+3. Each shop has it's own shard in the data store
 
 
 Error queue
