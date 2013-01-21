@@ -83,3 +83,5 @@ Technical Considerations
 
 2. Make message processing transactional 
 
+3. Update arch diagram to show SOA services and events/subscribers
+
