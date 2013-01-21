@@ -5,4 +5,5 @@
               {applications,[kernel,stdlib]},
               {mod,{erldexer_app,[]}},
               {env,[]},
-              {modules,[batcher,erldexer_app,erldexer_sup,job_producer]}]}.
+              {modules,[batcher,erldexer_app,erldexer_sup,job_producer,
+                        publisher]}]}.

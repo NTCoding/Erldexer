@@ -47,7 +47,7 @@ publish(Batch, Channel) ->
 	amqp_channel:call(Channel, #'queue.declare'{queue = <<"upsertbatches">>}),
 	Publish = #'basic.publish'{ exchange = <<"">>, routing_key = <<"upsertbatches">>},
 	amqp_channel:cast(Channel, Publish, Message),
-	io:format("Batcher published a batch ~n").
+	io:format("Batcher created a batch ~n").
 	
 	
 
