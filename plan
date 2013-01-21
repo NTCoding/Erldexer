@@ -21,7 +21,7 @@ Priority upsert jobs
 
 1. Jobs producer adds a flag to jobs indicating if they are priority **[done]
 
-2. Batchers will create separate batches for upsert jobs
+2. Batchers will create separate batches for upsert jobs **[done]
 
 3. Upsert batches are published to the upsert queue
 

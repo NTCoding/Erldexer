@@ -41,7 +41,6 @@ next_batch() ->
 	receive
 		{#'basic.deliver'{}, #amqp_msg{payload = Payload}} ->
 			Data = binary_to_term(Payload),			
-			io:format("Received a batch: ~n~p~n", [Data]),
 			Data
 	after 1000 ->
 		nobatch
