@@ -76,6 +76,12 @@ Snapshot based re-index
 2. Perform a full re-index from snapshots alone
 
 
+Processing Elasticity
+----------------------
+
+1. Enable nodes in Erlang cluster to be re-assigned between the different services
+
+
 Technical Considerations
 ------------------------
 
