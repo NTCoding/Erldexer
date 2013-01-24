@@ -25,7 +25,7 @@ Priority upsert jobs
 
 3. Priority upsert batches are published to the priority upsert queue **[done]
 
-4. Publishers will take priority jobs if they are present
+4. Publishers will take priority jobs if they are present **[done]
 
 
 Data Sharding
@@ -104,6 +104,10 @@ Technical Considerations
 4. Start up batchers and publishers on different nodes
 
 5. Spawn publishers and priority publishers in tandem?
+
+6. Make all messages events - e.g. subscriber stores messages locally and pulls of its queue
+
+7. Add some eunit and common tests
 
 
 Update Diagram
