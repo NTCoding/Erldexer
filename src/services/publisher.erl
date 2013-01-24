@@ -4,46 +4,59 @@
 
 -include_lib("lib/amqp_client/include/amqp_client.hrl").
 
-start() ->
-	spawn(fun() -> 
-					subscribe_to_batcher(),
-					publish() 
-		  end).
+start() -> spawn(fun() -> publish(channel()) end).
 
 
-subscribe_to_batcher() ->
+channel() ->
 	{ok, Connection} = amqp_connection:start(#amqp_params_network{host = "localhost"}),
 	{ok, Channel} = amqp_connection:open_channel(Connection),
-	amqp_channel:call(Channel, #'queue.declare'{queue = <<"upsertbatches">>}),
-	amqp_channel:subscribe(Channel, #'basic.consume'{queue = <<"upsertbatches">>, no_ack=true}, self()),
-	receive
-        #'basic.consume_ok'{} -> 
-								io:format("Received ok signal~n"),
-								ok
-    end.
+	Channel.
 
 
-publish() ->
-	Batch = next_batch(),
+%% publishing
+publish(Channel) ->
+	Batch = next_batch(Channel),
 	publish_batch(Batch),
 	timer:sleep(1000 * 30),
-	publish().	
+	publish(Channel).	
 
-
-publish_batch(nobatch) ->
+publish_batch(no_batch) ->
 	io:format("No batches available to publish. Will look again in 30 seconds~n");
 
 publish_batch(Batch) -> 
 	io:format("Published batch to data store. Next batch in 30 seconds~n").
-	
-	
-next_batch() -> 
-	receive
-		{#'basic.deliver'{}, #amqp_msg{payload = Payload}} ->
-			Data = binary_to_term(Payload),			
-			Data
-	after 1000 ->
-		nobatch
+
+
+%% getting batch
+next_batch(Channel) ->
+	PriorityBatch = read_priority_batch(Channel),
+	io:format("Got priority batch ~p~n", [PriorityBatch]),
+	next_batch(PriorityBatch, Channel).
+
+next_batch(no_priority_batch_available, Channel) -> read_normal_batch(Channel);
+
+next_batch(PriorityBatch, Channel) -> PriorityBatch.
+
+
+%% reading from queue
+read_priority_batch(Channel) ->
+	read_batch_or_default(Channel, <<"upsertprioritybatches">>, no_priority_batch_available).
+
+read_normal_batch(Channel) ->
+	read_batch_or_default(Channel, <<"upsertbatches">>, no_batch).	
+
+read_batch_or_default(Channel, Queue, Default) ->
+	amqp_channel:call(Channel, #'queue.declare'{queue = Queue}),
+	case amqp_channel:call(Channel, #'basic.get'{queue = Queue}) of
+
+			{#'basic.get_ok'{}, Content} ->	Content;
+
+			#'basic.get_empty'{} -> default
+
 	end.
+	
+
+	
+
 	
 

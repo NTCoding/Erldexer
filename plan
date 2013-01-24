@@ -101,3 +101,14 @@ Technical Considerations
 
 3. Update arch diagram to show SOA services and events/subscribers
 
+4. Start up batchers and publishers on different nodes
+
+5. Spawn publishers and priority publishers in tandem?
+
+
+Update Diagram
+--------------
+
+1. show that a separate node is handling the priority jobs
+	+ or it could just be a light-weight process
+	+ which is relatively cheap to have sat there doing nothing
